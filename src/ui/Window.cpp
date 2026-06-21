@@ -4,14 +4,18 @@
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFile>
+#include <QFileInfo>
 #include <QGuiApplication>
+#include <QHBoxLayout>
 #include <QLayout>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QScreen>
+#include <QSettings>
 #include <QStatusBar>
+#include <QVBoxLayout>
 
 #include "../Game.h"
 #include "../GameFactory.h"
@@ -37,6 +41,13 @@
 
 using namespace std;
 
+namespace {
+constexpr int MaxRecentRoms = 10;
+constexpr const char* SettingsOrganization = "Tristan Penman";
+constexpr const char* SettingsApplication = "Chaos";
+constexpr const char* RecentRomsKey = "recentRoms";
+}
+
 Window::Window()
   : QMainWindow(nullptr)
   , m_levelSelect(nullptr)
@@ -60,8 +71,10 @@ Window::Window()
   , m_zoomOutAction(nullptr)
   , m_relocateLevelsAction(nullptr)
   , m_romInfoAction(nullptr)
+  , m_openRecentMenu(nullptr)
   , m_inspectorsMenu(nullptr)
   , m_statusBar(nullptr)
+  , m_openLastRomButton(nullptr)
   , m_rom(nullptr)
   , m_game(nullptr)
   , m_level(nullptr)
@@ -96,6 +109,15 @@ Window::Window()
   openRomButton->setMaximumWidth(250);
   connect(openRomButton, SIGNAL(clicked()), this, SLOT(showOpenRomDialog()));
 
+  m_openLastRomButton = new QPushButton(tr("Open Last..."));
+  m_openLastRomButton->setMaximumWidth(250);
+  connect(m_openLastRomButton, SIGNAL(clicked()), this, SLOT(openLastRom()));
+
+  const auto openButtonLayout = new QHBoxLayout();
+  openButtonLayout->addWidget(openRomButton);
+  openButtonLayout->addWidget(m_openLastRomButton);
+  openButtonLayout->setAlignment(Qt::AlignHCenter);
+
   // level select button
   m_levelSelectButton = new QPushButton(tr("Level Select..."));
   m_levelSelectButton->setMaximumWidth(250);
@@ -103,13 +125,15 @@ Window::Window()
   connect(m_levelSelectButton, SIGNAL(clicked()), this, SLOT(showLevelSelectDialog()));
 
   const auto buttonLayout = new QVBoxLayout();
-  buttonLayout->addWidget(openRomButton);
+  buttonLayout->addLayout(openButtonLayout);
   buttonLayout->addWidget(m_levelSelectButton);
   buttonLayout->setAlignment(Qt::AlignHCenter);
 
   const auto buttonsWidget = new QWidget();
   buttonsWidget->setLayout(buttonLayout);
   setCentralWidget(buttonsWidget);
+
+  updateRecentRomActions();
 }
 
 bool Window::openRom(const QString &path)
@@ -130,6 +154,8 @@ bool Window::openRom(const QString &path)
 
   LOG() << "ROM identified";
   LOG() << "Domestic name: '" << m_rom->readDomesticName() << "'";
+
+  addRecentRom(QFileInfo(path).absoluteFilePath());
 
   m_levelSelectAction->setEnabled(true);
   m_levelSelectButton->setEnabled(true);
@@ -190,16 +216,6 @@ void Window::exportPng(const QString& fileName)
 
 void Window::showOpenRomDialog()
 {
-  if (m_level) {
-    const QMessageBox::StandardButton reply = QMessageBox::question(this,
-          tr("Close Level"),
-          tr("Are you sure you want to close the current level?"),
-          QMessageBox::Yes | QMessageBox::No);
-    if (reply == QMessageBox::No) {
-      return;
-    }
-  }
-
   QFileDialog dialog(this, tr("Open ROM"), QString(), tr("ROM Files (*.bin)"));
   dialog.setFileMode(QFileDialog::ExistingFile);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_WIN)
@@ -210,11 +226,28 @@ void Window::showOpenRomDialog()
   }
   const QString fileName = dialog.selectedFiles().value(0);
   if (!fileName.isEmpty()) {
-    m_level.reset();
+    openRomFromUserAction(fileName);
+  }
+}
 
-    if (openRom(fileName)) {
-      showLevelSelectDialog();
-    }
+void Window::openLastRom()
+{
+  const QString fileName = recentRoms().value(0);
+  if (!fileName.isEmpty()) {
+    openRomFromUserAction(fileName);
+  }
+}
+
+void Window::openRecentRom()
+{
+  const auto action = qobject_cast<QAction*>(sender());
+  if (!action) {
+    return;
+  }
+
+  const QString fileName = action->data().toString();
+  if (!fileName.isEmpty()) {
+    openRomFromUserAction(fileName);
   }
 }
 
@@ -554,6 +587,96 @@ void Window::chunksModified()
   m_hasUnsavedChanges = true;
 }
 
+bool Window::confirmCloseCurrentLevel()
+{
+  if (!m_level) {
+    return true;
+  }
+
+  const QMessageBox::StandardButton reply = QMessageBox::question(this,
+        tr("Close Level"),
+        tr("Are you sure you want to close the current level?"),
+        QMessageBox::Yes | QMessageBox::No);
+  return reply != QMessageBox::No;
+}
+
+bool Window::openRomFromUserAction(const QString& path)
+{
+  if (!confirmCloseCurrentLevel()) {
+    return false;
+  }
+
+  m_level.reset();
+
+  if (!openRom(path)) {
+    return false;
+  }
+
+  showLevelSelectDialog();
+  return true;
+}
+
+QStringList Window::recentRoms() const
+{
+  QSettings settings(SettingsOrganization, SettingsApplication);
+  return settings.value(RecentRomsKey).toStringList();
+}
+
+void Window::setRecentRoms(const QStringList& paths)
+{
+  QSettings settings(SettingsOrganization, SettingsApplication);
+  settings.setValue(RecentRomsKey, paths);
+}
+
+void Window::addRecentRom(const QString& path)
+{
+  if (path.isEmpty()) {
+    return;
+  }
+
+  QStringList paths = recentRoms();
+  paths.removeAll(path);
+  paths.prepend(path);
+
+  while (paths.size() > MaxRecentRoms) {
+    paths.removeLast();
+  }
+
+  setRecentRoms(paths);
+  updateRecentRomActions();
+}
+
+void Window::updateRecentRomActions()
+{
+  const QStringList paths = recentRoms();
+  const bool hasRecentRoms = !paths.isEmpty();
+
+  if (m_openLastRomButton) {
+    m_openLastRomButton->setEnabled(hasRecentRoms);
+  }
+  if (!m_openRecentMenu) {
+    return;
+  }
+
+  m_openRecentMenu->clear();
+  m_openRecentMenu->setEnabled(hasRecentRoms);
+
+  for (int i = 0; i < paths.size(); i++) {
+    const QString& path = paths.at(i);
+    QString text = QFileInfo(path).fileName();
+    if (text.isEmpty()) {
+      text = path;
+    }
+    text.replace("&", "&&");
+
+    auto action = new QAction(tr("&%1 %2").arg(i + 1).arg(text), m_openRecentMenu);
+    action->setData(path);
+    action->setStatusTip(path);
+    connect(action, SIGNAL(triggered()), this, SLOT(openRecentRom()));
+    m_openRecentMenu->addAction(action);
+  }
+}
+
 bool Window::trySaveRom()
 {
   if (!m_game || !m_level) {
@@ -648,6 +771,8 @@ void Window::createFileMenu()
   // file menu
   auto fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(m_openRomAction);
+  m_openRecentMenu = fileMenu->addMenu(tr("Open &Recent"));
+  updateRecentRomActions();
   fileMenu->addSeparator()->setSeparator(true);
   fileMenu->addAction(m_levelSelectAction);
   fileMenu->addSeparator();

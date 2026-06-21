@@ -4,8 +4,11 @@
 #include <memory>
 
 #include <QMainWindow>
+#include <QStringList>
 
 class QHBoxLayout;
+class QAction;
+class QMenu;
 class QPushButton;
 class QStatusBar;
 class QCloseEvent;
@@ -37,6 +40,8 @@ public:
 public slots:
   // file
   void showOpenRomDialog();
+  void openLastRom();
+  void openRecentRom();
   void showLevelSelectDialog();
   void saveRom();
   void showExportBinaryDialog();
@@ -78,6 +83,12 @@ private slots:
   void chunksModified();
 
 private:
+  bool confirmCloseCurrentLevel();
+  bool openRomFromUserAction(const QString& path);
+  QStringList recentRoms() const;
+  void setRecentRoms(const QStringList& paths);
+  void addRecentRom(const QString& path);
+  void updateRecentRomActions();
   bool trySaveRom();
   void createFileMenu();
   void createEditMenu();
@@ -117,8 +128,10 @@ private:
   QAction* m_romInfoAction;
 
   // misc
+  QMenu* m_openRecentMenu;
   QMenu* m_inspectorsMenu;
   QStatusBar* m_statusBar;
+  QPushButton* m_openLastRomButton;
   QPushButton* m_levelSelectButton;
 
   std::shared_ptr<Rom> m_rom;
