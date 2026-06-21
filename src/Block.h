@@ -23,8 +23,10 @@ public:
   Block() = default;
 
   void fromSegaFormat(uint8_t buffer[BLOCK_SIZE_IN_ROM]);
+  void toSegaFormat(uint8_t buffer[BLOCK_SIZE_IN_ROM]) const;
 
   const PatternDesc& getPatternDesc(uint8_t x, uint8_t y) const;
+  void setPatternDesc(uint8_t x, uint8_t y, uint16_t value);
 
 private:
   Block(const Block&) = delete;

@@ -1,5 +1,6 @@
 #include "../KosinskiReader.h"
 #include "../KosinskiWriter.h"
+#include "../Block.h"
 #include "../Chunk.h"
 #include "../Logger.h"
 #include "../Map.h"
@@ -194,9 +195,11 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
 {
   auto tilesAddr = getTilesAddr(levelIdx);
   auto patternsAddr = getPatternsAddr(levelIdx);
+  auto blocksAddr = getBlocksAddr(levelIdx);
   auto chunksAddr = getChunksAddr(levelIdx);
   optional<size_t> mapLimit;
   optional<size_t> patternLimit;
+  optional<size_t> blockLimit;
   optional<size_t> chunkLimit;
   auto& file = m_rom->getFile();
 
@@ -235,6 +238,20 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   {
     std::vector<uint8_t> buffer(0xFFFF);
     KosinskiReader reader;
+    file.seek(blocksAddr);
+    auto result = reader.decompress(file, buffer.data(), buffer.size());
+    if (!result.first) {
+      LOG() << "Failed to fully extract existing blocks at location 0x" << hex << blocksAddr;
+      return false;
+    }
+
+    blockLimit = size_t(file.pos()) - blocksAddr;
+    LOG() << "Total block space available is " << *blockLimit << " bytes";
+  }
+
+  {
+    std::vector<uint8_t> buffer(0xFFFF);
+    KosinskiReader reader;
     file.seek(chunksAddr);
     auto result = reader.decompress(file, buffer.data(), buffer.size());
     if (!result.first) {
@@ -258,6 +275,21 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   auto patternResult = patternWriter.compress(patternBuffer, patternData.data(), patternData.size(), patternLimit);
   if (!patternResult.first) {
     LOG() << "Failed to write pattern data at location 0x" << hex << patternsAddr << "; not enough space";
+    return false;
+  }
+
+  vector<uint8_t> blockData(level.getBlockCount() * Block::BLOCK_SIZE_IN_ROM);
+  for (size_t i = 0; i < level.getBlockCount(); i++) {
+    level.getBlock(i).toSegaFormat(&blockData[i * Block::BLOCK_SIZE_IN_ROM]);
+  }
+
+  QByteArray compressedBlocks;
+  QBuffer blockBuffer(&compressedBlocks);
+  blockBuffer.open(QIODevice::WriteOnly);
+  KosinskiWriter blockWriter;
+  auto blockResult = blockWriter.compress(blockBuffer, blockData.data(), blockData.size(), blockLimit);
+  if (!blockResult.first) {
+    LOG() << "Failed to write block data at location 0x" << hex << blocksAddr << "; not enough space";
     return false;
   }
 
@@ -293,6 +325,10 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   file.seek(patternsAddr);
   file.write(compressedPatterns);
   LOG() << "Wrote " << patternResult.second << " pattern bytes to location 0x" << hex << patternsAddr;
+
+  file.seek(blocksAddr);
+  file.write(compressedBlocks);
+  LOG() << "Wrote " << blockResult.second << " block bytes to location 0x" << hex << blocksAddr;
 
   file.seek(chunksAddr);
   file.write(compressedChunks);

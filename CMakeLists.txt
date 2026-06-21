@@ -86,6 +86,8 @@ set(PROJECT_SOURCES
     src/ui/ChunkInspector.h
     src/ui/ChunkSelector.cpp
     src/ui/ChunkSelector.h
+    src/ui/BlockEditor.cpp
+    src/ui/BlockEditor.h
     src/ui/BlockInspector.cpp
     src/ui/BlockInspector.h
     src/ui/LevelSelect.cpp

@@ -23,6 +23,7 @@ class PaletteInspector;
 class PatternInspector;
 class Rom;
 class RomInfo;
+class BlockEditor;
 class ChunkEditor;
 
 class Window : public QMainWindow
@@ -63,6 +64,7 @@ public slots:
   void showChunkInspector();
 
   // edit
+  void showBlockEditor();
   void showPatternEditor();
   void showChunkEditor();
 
@@ -79,6 +81,7 @@ private slots:
   void noTile();
   void undosRedosChanged(size_t undos, size_t redos);
   void mapModified();
+  void blocksModified();
   void patternModified();
   void chunksModified();
 
@@ -120,6 +123,7 @@ private:
   QAction* m_undoAction;
   QAction* m_redoAction;
   QAction* m_patternEditorAction;
+  QAction* m_blockEditorAction;
   QAction* m_chunkEditorAction;
   QAction* m_actualSizeAction;
   QAction* m_zoomInAction;

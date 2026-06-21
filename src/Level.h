@@ -24,6 +24,7 @@ public:
   // 16x16 blocks
   virtual size_t getBlockCount() const = 0;
   virtual const Block& getBlock(size_t index) const = 0;
+  virtual Block& getBlock(size_t index) = 0;
 
   // 128x128 chunks
   virtual size_t getChunkCount() const = 0;

@@ -33,6 +33,7 @@ public:
 
   size_t getBlockCount() const override;
   const Block& getBlock(size_t index) const override;
+  Block& getBlock(size_t index) override;
 
   size_t getChunkCount() const override;
   const Chunk& getChunk(size_t index) const override;

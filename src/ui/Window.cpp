@@ -24,6 +24,7 @@
 #include "../Map.h"
 #include "../Rom.h"
 
+#include "BlockEditor.h"
 #include "ChunkInspector.h"
 #include "BlockInspector.h"
 #include "LevelSelect.h"
@@ -65,6 +66,7 @@ Window::Window()
   , m_undoAction(nullptr)
   , m_redoAction(nullptr)
   , m_patternEditorAction(nullptr)
+  , m_blockEditorAction(nullptr)
   , m_chunkEditorAction(nullptr)
   , m_actualSizeAction(nullptr)
   , m_zoomInAction(nullptr)
@@ -344,6 +346,18 @@ void Window::showPatternEditor()
   editor.exec();
 }
 
+void Window::showBlockEditor()
+{
+  if (!m_level) {
+    return;
+  }
+
+  auto* editor = new BlockEditor(this, m_level);
+  editor->setAttribute(Qt::WA_DeleteOnClose);
+  connect(editor, SIGNAL(blocksModified()), this, SLOT(blocksModified()));
+  editor->show();
+}
+
 void Window::showChunkEditor()
 {
   if (!m_level) {
@@ -514,6 +528,7 @@ void Window::levelSelected(int levelIdx)
   m_exportBinaryAction->setEnabled(true);
   m_exportPngAction->setEnabled(true);
   m_patternEditorAction->setEnabled(true);
+  m_blockEditorAction->setEnabled(true);
   m_chunkEditorAction->setEnabled(true);
 
   m_inspectorsMenu->setEnabled(true);
@@ -564,6 +579,20 @@ void Window::patternModified()
   if (m_patternInspector) {
     m_patternInspector->refresh();
   }
+  if (m_blockInspector) {
+    m_blockInspector->refresh();
+  }
+  if (m_chunkInspector) {
+    m_chunkInspector->refresh();
+  }
+  if (m_mapEditor) {
+    m_mapEditor->refreshChunks();
+  }
+  m_hasUnsavedChanges = true;
+}
+
+void Window::blocksModified()
+{
   if (m_blockInspector) {
     m_blockInspector->refresh();
   }
@@ -797,6 +826,10 @@ void Window::createEditMenu()
   m_patternEditorAction->setDisabled(true);
   connect(m_patternEditorAction, SIGNAL(triggered()), this, SLOT(showPatternEditor()));
 
+  m_blockEditorAction = new QAction(tr("16x16 Block Editor..."));
+  m_blockEditorAction->setDisabled(true);
+  connect(m_blockEditorAction, SIGNAL(triggered()), this, SLOT(showBlockEditor()));
+
   m_chunkEditorAction = new QAction(tr("128x128 Chunk Editor..."));
   m_chunkEditorAction->setDisabled(true);
   connect(m_chunkEditorAction, SIGNAL(triggered()), this, SLOT(showChunkEditor()));
@@ -805,6 +838,7 @@ void Window::createEditMenu()
   editMenu->addAction(m_redoAction);
   editMenu->addSeparator();
   editMenu->addAction(m_patternEditorAction);
+  editMenu->addAction(m_blockEditorAction);
   editMenu->addAction(m_chunkEditorAction);
 }
 
