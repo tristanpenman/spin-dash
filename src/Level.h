@@ -25,6 +25,7 @@ public:
 
   virtual size_t getBlockCount() const = 0;
   virtual const Block& getBlock(size_t index) const = 0;
+  virtual Block& getBlock(size_t index) = 0;
 
   virtual Map& getMap() = 0;
 };

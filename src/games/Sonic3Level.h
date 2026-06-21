@@ -34,6 +34,7 @@ public:
 
   size_t getBlockCount() const override;
   const Block& getBlock(size_t index) const override;
+  Block& getBlock(size_t index) override;
 
   Map& getMap() override;
 

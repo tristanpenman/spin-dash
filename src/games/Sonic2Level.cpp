@@ -88,6 +88,15 @@ const Block& Sonic2Level::getBlock(size_t index) const
   return m_blocks[index];
 }
 
+Block& Sonic2Level::getBlock(size_t index)
+{
+  if (index >= m_blockCount) {
+    throw runtime_error("Invalid block index");
+  }
+
+  return m_blocks[index];
+}
+
 Map& Sonic2Level::getMap()
 {
   return *m_map;

@@ -20,6 +20,7 @@ class PaletteInspector;
 class PatternInspector;
 class Rom;
 class RomInfo;
+class TileEditor;
 
 class Window : public QMainWindow
 {
@@ -58,6 +59,7 @@ public slots:
 
   // edit
   void showPatternEditor();
+  void showTileEditor();
 
   // tools
   void showRomInfo();
@@ -73,6 +75,7 @@ private slots:
   void undosRedosChanged(size_t undos, size_t redos);
   void mapModified();
   void patternModified();
+  void tilesModified();
 
 private:
   bool trySaveRom();
@@ -106,6 +109,7 @@ private:
   QAction* m_undoAction;
   QAction* m_redoAction;
   QAction* m_patternEditorAction;
+  QAction* m_tileEditorAction;
   QAction* m_actualSizeAction;
   QAction* m_zoomInAction;
   QAction* m_zoomOutAction;

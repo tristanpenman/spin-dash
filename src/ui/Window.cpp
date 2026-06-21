@@ -28,6 +28,7 @@
 #include "PatternEditor.h"
 #include "PatternInspector.h"
 #include "RomInfo.h"
+#include "TileEditor.h"
 
 #include "Window.h"
 
@@ -53,6 +54,7 @@ Window::Window()
   , m_undoAction(nullptr)
   , m_redoAction(nullptr)
   , m_patternEditorAction(nullptr)
+  , m_tileEditorAction(nullptr)
   , m_actualSizeAction(nullptr)
   , m_zoomInAction(nullptr)
   , m_zoomOutAction(nullptr)
@@ -309,6 +311,18 @@ void Window::showPatternEditor()
   editor.exec();
 }
 
+void Window::showTileEditor()
+{
+  if (!m_level) {
+    return;
+  }
+
+  auto* editor = new TileEditor(this, m_level);
+  editor->setAttribute(Qt::WA_DeleteOnClose);
+  connect(editor, SIGNAL(tilesModified()), this, SLOT(tilesModified()));
+  editor->show();
+}
+
 void Window::actualSize()
 {
   if (!m_mapEditor) {
@@ -466,6 +480,7 @@ void Window::levelSelected(int levelIdx)
   m_exportBinaryAction->setEnabled(true);
   m_exportPngAction->setEnabled(true);
   m_patternEditorAction->setEnabled(true);
+  m_tileEditorAction->setEnabled(true);
 
   m_inspectorsMenu->setEnabled(true);
   m_romInfoAction->setEnabled(true);
@@ -518,6 +533,17 @@ void Window::patternModified()
   if (m_chunkInspector) {
     m_chunkInspector->refresh();
   }
+  if (m_blockInspector) {
+    m_blockInspector->refresh();
+  }
+  if (m_mapEditor) {
+    m_mapEditor->refreshBlocks();
+  }
+  m_hasUnsavedChanges = true;
+}
+
+void Window::tilesModified()
+{
   if (m_blockInspector) {
     m_blockInspector->refresh();
   }
@@ -645,10 +671,15 @@ void Window::createEditMenu()
   m_patternEditorAction->setDisabled(true);
   connect(m_patternEditorAction, SIGNAL(triggered()), this, SLOT(showPatternEditor()));
 
+  m_tileEditorAction = new QAction(tr("Tile Editor..."));
+  m_tileEditorAction->setDisabled(true);
+  connect(m_tileEditorAction, SIGNAL(triggered()), this, SLOT(showTileEditor()));
+
   editMenu->addAction(m_undoAction);
   editMenu->addAction(m_redoAction);
   editMenu->addSeparator();
   editMenu->addAction(m_patternEditorAction);
+  editMenu->addAction(m_tileEditorAction);
 }
 
 void Window::createViewMenu()

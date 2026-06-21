@@ -101,6 +101,8 @@ set(PROJECT_SOURCES
     src/ui/Rectangle.h
     src/ui/RomInfo.cpp
     src/ui/RomInfo.h
+    src/ui/TileEditor.cpp
+    src/ui/TileEditor.h
     src/ui/Window.cpp
     src/ui/Window.h
     src/ui/ZoomSupport.cpp
