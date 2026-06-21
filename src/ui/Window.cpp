@@ -317,7 +317,8 @@ void Window::showChunkEditor()
     return;
   }
 
-  auto* editor = new ChunkEditor(this, m_level);
+  const auto selectedChunk = m_mapEditor ? m_mapEditor->getSelectedChunk() : 0;
+  auto* editor = new ChunkEditor(this, m_level, selectedChunk);
   editor->setAttribute(Qt::WA_DeleteOnClose);
   connect(editor, SIGNAL(chunksModified()), this, SLOT(chunksModified()));
   editor->show();

@@ -1,9 +1,11 @@
 #include <QCheckBox>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QImage>
 #include <QLabel>
 #include <QListWidget>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPixmap>
@@ -30,9 +32,10 @@ static QColor toQColor(const Palette::Color& color)
   return QColor(color.r, color.g, color.b);
 }
 
-ChunkCanvas::ChunkCanvas(QWidget* parent, shared_ptr<Level>& level)
+ChunkCanvas::ChunkCanvas(QWidget* parent, shared_ptr<Level>& level, Chunk* chunks)
   : QWidget(parent)
   , m_level(level)
+  , m_chunks(chunks)
   , m_chunkIndex(0)
   , m_previewPaletteIndex(0)
   , m_selectedBlockIndex(0)
@@ -113,7 +116,7 @@ void ChunkCanvas::paintEvent(QPaintEvent*)
   painter.scale(CANVAS_SCALE, CANVAS_SCALE);
   painter.fillRect(QRect(0, 0, Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT), Qt::black);
 
-  drawChunk(painter, m_level->getChunk(m_chunkIndex));
+  drawChunk(painter, m_chunks[m_chunkIndex]);
 
   painter.setPen(QColor(55, 55, 55));
   for (int i = 0; i <= 8; i++) {
@@ -146,7 +149,7 @@ void ChunkCanvas::drawAt(const QPoint& pos)
     value |= V_FLIP_MASK;
   }
 
-  Chunk& chunk = m_level->getChunk(m_chunkIndex);
+  Chunk& chunk = m_chunks[m_chunkIndex];
   if (chunk.getBlockDesc(static_cast<uint8_t>(x), static_cast<uint8_t>(y)).get() == value) {
     return;
   }
@@ -206,20 +209,24 @@ void ChunkCanvas::drawPattern(QPainter& painter,
   }
 }
 
-ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level)
+ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level, size_t initialChunkIndex)
   : QDialog(parent)
   , m_level(level)
+  , m_chunks(new Chunk[level->getChunkCount()])
   , m_chunkCombo(nullptr)
   , m_paletteCombo(nullptr)
   , m_blockList(nullptr)
   , m_hFlipCheckBox(nullptr)
   , m_vFlipCheckBox(nullptr)
   , m_canvas(nullptr)
-  , m_chunkIndex(0)
+  , m_saveButton(nullptr)
+  , m_discardButton(nullptr)
+  , m_chunkIndex(initialChunkIndex < level->getChunkCount() ? initialChunkIndex : 0)
   , m_previewPaletteIndex(0)
   , m_dirty(false)
 {
   setModal(false);
+  loadChunks();
 
   auto* mainLayout = new QVBoxLayout();
   mainLayout->setContentsMargins(8, 8, 8, 8);
@@ -241,7 +248,8 @@ ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level)
   mainLayout->addLayout(selectorLayout);
 
   auto* editorLayout = new QHBoxLayout();
-  m_canvas = new ChunkCanvas(this, m_level);
+  m_canvas = new ChunkCanvas(this, m_level, m_chunks.get());
+  m_canvas->setChunkIndex(m_chunkIndex);
   editorLayout->addWidget(m_canvas);
 
   auto* toolsLayout = new QVBoxLayout();
@@ -260,7 +268,11 @@ ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level)
 
   auto* buttonLayout = new QHBoxLayout();
   buttonLayout->addStretch(1);
+  m_saveButton = new QPushButton(tr("Save"));
+  m_discardButton = new QPushButton(tr("Discard"));
   auto* closeButton = new QPushButton(tr("Close"));
+  buttonLayout->addWidget(m_saveButton);
+  buttonLayout->addWidget(m_discardButton);
   buttonLayout->addWidget(closeButton);
   mainLayout->addLayout(buttonLayout);
 
@@ -270,12 +282,66 @@ ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level)
   connect(m_hFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(horizontalFlipChanged(int)));
   connect(m_vFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(verticalFlipChanged(int)));
   connect(m_canvas, SIGNAL(chunkModified()), this, SLOT(chunkModified()));
+  connect(m_saveButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
+  connect(m_discardButton, SIGNAL(clicked()), this, SLOT(discardChanges()));
   connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
+  m_chunkCombo->setCurrentIndex(static_cast<int>(m_chunkIndex));
   if (m_blockList->count() > 0) {
     m_blockList->setCurrentRow(0);
   }
-  updateTitle();
+  setDirty(false);
+}
+
+void ChunkEditor::closeEvent(QCloseEvent* event)
+{
+  if (confirmDirtyChanges()) {
+    event->accept();
+  } else {
+    event->ignore();
+  }
+}
+
+void ChunkEditor::applyChunks()
+{
+  uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
+  for (size_t i = 0; i < m_level->getChunkCount(); i++) {
+    m_chunks[i].toSegaFormat(buffer);
+    m_level->getChunk(i).fromSegaFormat(buffer);
+  }
+}
+
+bool ChunkEditor::confirmDirtyChanges()
+{
+  if (!m_dirty) {
+    return true;
+  }
+
+  const auto reply = QMessageBox::warning(this,
+      tr("Unsaved Chunks"),
+      tr("These chunks have unsaved changes.\n\nDo you want to save them?"),
+      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+      QMessageBox::Save);
+
+  switch (reply) {
+  case QMessageBox::Save:
+    saveChanges();
+    return true;
+  case QMessageBox::Discard:
+    setDirty(false);
+    return true;
+  default:
+    return false;
+  }
+}
+
+void ChunkEditor::loadChunks()
+{
+  uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
+  for (size_t i = 0; i < m_level->getChunkCount(); i++) {
+    m_level->getChunk(i).toSegaFormat(buffer);
+    m_chunks[i].fromSegaFormat(buffer);
+  }
 }
 
 QPixmap ChunkEditor::renderBlockPreview(size_t blockIndex, int scale) const
@@ -340,6 +406,14 @@ void ChunkEditor::populateBlockSelector()
   }
 }
 
+void ChunkEditor::setDirty(bool dirty)
+{
+  m_dirty = dirty;
+  m_saveButton->setEnabled(dirty);
+  m_discardButton->setEnabled(dirty);
+  updateTitle();
+}
+
 void ChunkEditor::updateTitle()
 {
   setWindowTitle(QString("%1Chunk Editor - Chunk %2")
@@ -354,6 +428,13 @@ void ChunkEditor::blockChanged(QListWidgetItem* current, QListWidgetItem*)
   }
 
   m_canvas->setSelectedBlock(static_cast<uint16_t>(current->data(Qt::UserRole).toUInt()));
+}
+
+void ChunkEditor::discardChanges()
+{
+  loadChunks();
+  m_canvas->update();
+  setDirty(false);
 }
 
 void ChunkEditor::horizontalFlipChanged(int state)
@@ -380,8 +461,13 @@ void ChunkEditor::chunkChanged(int chunkIndex)
 
 void ChunkEditor::chunkModified()
 {
-  m_dirty = true;
-  updateTitle();
+  setDirty(true);
+}
+
+void ChunkEditor::saveChanges()
+{
+  applyChunks();
+  setDirty(false);
   emit chunksModified();
 }
 

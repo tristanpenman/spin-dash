@@ -37,6 +37,7 @@ public:
 
   int getWidth() const;
   int getHeight() const;
+  size_t getSelectedChunk() const;
 
 protected:
   bool eventFilter(QObject *object, QEvent *ev) override;

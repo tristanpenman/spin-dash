@@ -184,6 +184,11 @@ int MapEditor::getHeight() const
   return m_level->getMap().getHeight() * Chunk::CHUNK_HEIGHT;
 }
 
+size_t MapEditor::getSelectedChunk() const
+{
+  return m_selectedChunk;
+}
+
 bool MapEditor::eventFilter(QObject *object, QEvent *ev)
 {
   if (object != m_view->viewport()) {
