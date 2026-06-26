@@ -4,15 +4,19 @@ A level editor for Sonic The Hedgehog on Sega Mega Drive and Genesis.
 
 ## Background
 
-This project began as a C++ port of Brett Kosinski's [Chaos](https://github.com/fancypantalons/chaos) level editor, which allowed modification of levels directly within a Sonic The Hedgehog 2 ROM file. It can also be used to view levels from Sonic The Hedgehog 3 ROMs.
+This project began as a C++ port of Brett Kosinski's [Chaos](https://github.com/fancypantalons/chaos) level editor, which allowed modification of levels directly within a Sonic The Hedgehog 2 ROM file. It can also be used to view levels from Sonic The Hedgehog 3 ROMs:
 
-Here's a screenshot of the app being used to edit Metropolis Zone, Act 1 from Sonic The Hedgehog 2:
+![Editing Hydrocity Zone, from Sonic The Hedgehog 3](./doc/hydrocity.png)
 
-![Editing Metropolis Zone, from Sonic The Hedgehog 2](./doc/metropolis.png)
+## Features
 
-Levels can also be zoomed in and out while editing, as seen in this screenshot of Hill Top Zone:
+Levels can also be zoomed in and out while editing:
 
 ![Editing Hill Top Zone, from Sonic The Hedgehog 2](./doc/hilltop.png)
+
+_SpinDash_ also includes tile editors for the 8x8 VDP tiles (patterns), 16x16 blocks, and 128x128 blocks used in both Sonic the Hedgehog 2 and 3:
+
+![Editing 128x128 Chunks in Aquatic Ruins Zone](./doc/chunk.png)
 
 ## Dependencies
 
