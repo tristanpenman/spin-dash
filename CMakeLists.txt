@@ -76,6 +76,8 @@ set(PROJECT_SOURCES
     src/commands/PencilCommand.h
     src/games/Sonic2.cpp
     src/games/Sonic2.h
+    src/games/Sonic2Disassembly.cpp
+    src/games/Sonic2Disassembly.h
     src/games/Sonic2Level.cpp
     src/games/Sonic2Level.h
     src/games/Sonic3.cpp

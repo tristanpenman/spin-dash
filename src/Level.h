@@ -15,6 +15,7 @@ public:
 
   virtual size_t getPaletteCount() const = 0;
   virtual const Palette& getPalette(size_t index) const = 0;
+  virtual Palette& getPalette(size_t index) = 0;
 
   // 8x8 patterns
   virtual size_t getPatternCount() const = 0;

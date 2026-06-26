@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "../Level.h"
 
@@ -23,9 +24,16 @@ public:
               uint32_t blocksAddr,
               uint32_t chunksAddr,
               uint32_t mapAddr);
+  Sonic2Level(const std::vector<char>& paletteData,
+              const std::vector<uint8_t>& patternData,
+              const std::vector<uint8_t>& blockData,
+              const std::vector<uint8_t>& chunkData,
+              const std::vector<uint8_t>& mapData);
+  ~Sonic2Level() override;
 
   size_t getPaletteCount() const override;
   const Palette& getPalette(size_t index) const override;
+  Palette& getPalette(size_t index) override;
 
   size_t getPatternCount() const override;
   const Pattern& getPattern(size_t index) const override;
@@ -46,10 +54,15 @@ private:
   Sonic2Level& operator=(const Sonic2Level&) = delete;
 
   void loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t levelPalettesAddr);
+  void loadPalettes(const std::vector<char>& data);
   void loadPatterns(Rom& rom, uint32_t patternsAddr);
+  void loadPatterns(const std::vector<uint8_t>& data);
   void loadBlocks(Rom& rom, uint32_t blocksAddr);
+  void loadBlocks(const std::vector<uint8_t>& data);
   void loadChunks(Rom& rom, uint32_t chunksAddr);
+  void loadChunks(const std::vector<uint8_t>& data);
   void loadMap(Rom& rom, uint32_t mapAddr);
+  void loadMap(const std::vector<uint8_t>& data);
 
   Palette* m_palettes;
   Pattern* m_patterns;

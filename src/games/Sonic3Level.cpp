@@ -51,6 +51,15 @@ const Palette& Sonic3Level::getPalette(size_t index) const
   return m_palettes[index];
 }
 
+Palette& Sonic3Level::getPalette(size_t index)
+{
+  if (index >= PALETTE_COUNT) {
+    throw runtime_error("Invalid palette index");
+  }
+
+  return m_palettes[index];
+}
+
 const Pattern& Sonic3Level::getPattern(size_t index) const
 {
   if (index >= m_patternCount) {

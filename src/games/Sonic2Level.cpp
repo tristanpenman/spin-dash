@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <vector>
 
@@ -31,6 +32,7 @@ Sonic2Level::Sonic2Level(Rom& rom,
   : m_palettes(nullptr)
   , m_patterns(nullptr)
   , m_blocks(nullptr)
+  , m_chunks(nullptr)
   , m_map(nullptr)
   , m_patternCount(0)
   , m_blockCount(0)
@@ -43,7 +45,46 @@ Sonic2Level::Sonic2Level(Rom& rom,
   loadMap(rom, mapAddr);
 }
 
+Sonic2Level::Sonic2Level(const vector<char>& paletteData,
+                         const vector<uint8_t>& patternData,
+                         const vector<uint8_t>& blockData,
+                         const vector<uint8_t>& chunkData,
+                         const vector<uint8_t>& mapData)
+  : m_palettes(nullptr)
+  , m_patterns(nullptr)
+  , m_blocks(nullptr)
+  , m_chunks(nullptr)
+  , m_map(nullptr)
+  , m_patternCount(0)
+  , m_blockCount(0)
+  , m_chunkCount(0)
+{
+  loadPalettes(paletteData);
+  loadPatterns(patternData);
+  loadBlocks(blockData);
+  loadChunks(chunkData);
+  loadMap(mapData);
+}
+
+Sonic2Level::~Sonic2Level()
+{
+  delete[] m_palettes;
+  delete[] m_patterns;
+  delete[] m_blocks;
+  delete[] m_chunks;
+  delete m_map;
+}
+
 const Palette& Sonic2Level::getPalette(size_t index) const
+{
+  if (index >= PALETTE_COUNT) {
+    throw runtime_error("Invalid palette index");
+  }
+
+  return m_palettes[index];
+}
+
+Palette& Sonic2Level::getPalette(size_t index)
 {
   if (index >= PALETTE_COUNT) {
     throw runtime_error("Invalid palette index");
@@ -113,18 +154,30 @@ Map& Sonic2Level::getMap()
 
 void Sonic2Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t levelPalettesAddr)
 {
-  m_palettes = new Palette[4];
+  vector<char> paletteData(Palette::PALETTE_SIZE_IN_ROM * PALETTE_COUNT);
 
   {
     auto buffer = rom.readBytes(characterPaletteAddr, Palette::PALETTE_SIZE_IN_ROM);
-    m_palettes[0].fromSegaFormat(buffer.data());
+    copy(buffer.begin(), buffer.end(), paletteData.begin());
   }
 
   {
     auto buffer = rom.readBytes(levelPalettesAddr, Palette::PALETTE_SIZE_IN_ROM * 3);
-    for (int i = 0; i < 3; i++) {
-      m_palettes[i + 1].fromSegaFormat(&buffer[Palette::PALETTE_SIZE_IN_ROM * i]);
-    }
+    copy(buffer.begin(), buffer.end(), paletteData.begin() + Palette::PALETTE_SIZE_IN_ROM);
+  }
+
+  loadPalettes(paletteData);
+}
+
+void Sonic2Level::loadPalettes(const vector<char>& data)
+{
+  if (data.size() != Palette::PALETTE_SIZE_IN_ROM * PALETTE_COUNT) {
+    throw runtime_error("Inconsistent palette data");
+  }
+
+  m_palettes = new Palette[PALETTE_COUNT];
+  for (size_t i = 0; i < PALETTE_COUNT; i++) {
+    m_palettes[i].fromSegaFormat(const_cast<char*>(&data[i * Palette::PALETTE_SIZE_IN_ROM]));
   }
 }
 
@@ -142,19 +195,25 @@ void Sonic2Level::loadPatterns(Rom& rom, uint32_t patternsAddr)
     throw runtime_error("Pattern decompression failed");
   }
 
+  buffer.resize(result.second);
+  loadPatterns(buffer);
+}
+
+void Sonic2Level::loadPatterns(const vector<uint8_t>& data)
+{
   // check data
-  m_patternCount = result.second / Pattern::PATTERN_SIZE_IN_ROM;
-  if (result.second % Pattern::PATTERN_SIZE_IN_ROM != 0) {
+  m_patternCount = data.size() / Pattern::PATTERN_SIZE_IN_ROM;
+  if (data.size() % Pattern::PATTERN_SIZE_IN_ROM != 0) {
     throw runtime_error("Inconsistent pattern data");
   }
 
   // convert pattern data
   m_patterns = new Pattern[m_patternCount];
   for (size_t i = 0; i < m_patternCount; i++) {
-    m_patterns[i].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
+    m_patterns[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Pattern::PATTERN_SIZE_IN_ROM]));
   }
 
-  LOG() << "Pattern count: " << m_patternCount << " (" << result.second << " bytes)";
+  LOG() << "Pattern count: " << m_patternCount << " (" << data.size() << " bytes)";
 }
 
 void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
@@ -171,19 +230,25 @@ void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
     throw runtime_error("Block decompression error");
   }
 
+  buffer.resize(result.second);
+  loadBlocks(buffer);
+}
+
+void Sonic2Level::loadBlocks(const vector<uint8_t>& data)
+{
   // check data
-  m_blockCount = result.second / Block::BLOCK_SIZE_IN_ROM;
-  if (result.second % Block::BLOCK_SIZE_IN_ROM != 0) {
+  m_blockCount = data.size() / Block::BLOCK_SIZE_IN_ROM;
+  if (data.size() % Block::BLOCK_SIZE_IN_ROM != 0) {
     throw runtime_error("Inconsistent block data");
   }
 
   // convert block data
   m_blocks = new Block[m_blockCount];
   for (size_t i = 0; i < m_blockCount; i++) {
-    m_blocks[i].fromSegaFormat(&buffer[i * Block::BLOCK_SIZE_IN_ROM]);
+    m_blocks[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Block::BLOCK_SIZE_IN_ROM]));
   }
 
-  LOG() << "Block count: " << m_blockCount << " (" << result.second << " bytes)";
+  LOG() << "Block count: " << m_blockCount << " (" << data.size() << " bytes)";
 }
 
 void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
@@ -200,18 +265,24 @@ void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
     throw runtime_error("Chunk decompression error");
   }
 
+  buffer.resize(result.second);
+  loadChunks(buffer);
+}
+
+void Sonic2Level::loadChunks(const vector<uint8_t>& data)
+{
   // check data
-  m_chunkCount = result.second / Chunk::CHUNK_SIZE_IN_ROM;
-  if (result.second % Chunk::CHUNK_SIZE_IN_ROM != 0) {
+  m_chunkCount = data.size() / Chunk::CHUNK_SIZE_IN_ROM;
+  if (data.size() % Chunk::CHUNK_SIZE_IN_ROM != 0) {
     throw runtime_error("Inconsistent chunk data");
   }
 
   m_chunks = new Chunk[m_chunkCount];
   for (size_t i = 0; i < m_chunkCount; i++) {
-    m_chunks[i].fromSegaFormat(&buffer[i * Chunk::CHUNK_SIZE_IN_ROM]);
+    m_chunks[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Chunk::CHUNK_SIZE_IN_ROM]));
   }
 
-  LOG() << "Chunk count: " << m_chunkCount << " (" << result.second << " bytes)";
+  LOG() << "Chunk count: " << m_chunkCount << " (" << data.size() << " bytes)";
 }
 
 void Sonic2Level::loadMap(Rom& rom, uint32_t mapAddr)
@@ -228,10 +299,16 @@ void Sonic2Level::loadMap(Rom& rom, uint32_t mapAddr)
     throw runtime_error("Map decompression error");
   }
 
+  buffer.resize(result.second);
+  loadMap(buffer);
+}
+
+void Sonic2Level::loadMap(const vector<uint8_t>& data)
+{
   // check data
-  if (result.second != MAP_LAYERS * MAP_HEIGHT * MAP_WIDTH) {
+  if (data.size() != MAP_LAYERS * MAP_HEIGHT * MAP_WIDTH) {
     throw runtime_error("Inconsistent map data");
   }
 
-  m_map = new Map(MAP_LAYERS, MAP_WIDTH, MAP_HEIGHT, buffer.data());
+  m_map = new Map(MAP_LAYERS, MAP_WIDTH, MAP_HEIGHT, const_cast<uint8_t*>(data.data()));
 }

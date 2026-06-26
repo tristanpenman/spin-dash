@@ -4,6 +4,7 @@
 #include "../Chunk.h"
 #include "../Logger.h"
 #include "../Map.h"
+#include "../Palette.h"
 #include "../Pattern.h"
 #include "../Rom.h"
 
@@ -194,6 +195,8 @@ bool Sonic2::relocateLevels(bool unsafe)
 bool Sonic2::save(unsigned int levelIdx, Level& level)
 {
   auto tilesAddr = getTilesAddr(levelIdx);
+  auto characterPaletteAddr = getCharacterPaletteAddr();
+  auto levelPalettesAddr = getLevelPalettesAddr(levelIdx);
   auto patternsAddr = getPatternsAddr(levelIdx);
   auto blocksAddr = getBlocksAddr(levelIdx);
   auto chunksAddr = getChunksAddr(levelIdx);
@@ -219,6 +222,19 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
 
     mapLimit = size_t(file.pos()) - tilesAddr;
     LOG() << "Total space available is " << *mapLimit << " bytes";
+  }
+
+  {
+    char paletteData[Palette::PALETTE_SIZE_IN_ROM];
+    level.getPalette(0).toSegaFormat(paletteData);
+    file.seek(characterPaletteAddr);
+    file.write(paletteData, Palette::PALETTE_SIZE_IN_ROM);
+
+    for (size_t i = 1; i < level.getPaletteCount(); i++) {
+      level.getPalette(i).toSegaFormat(paletteData);
+      file.seek(levelPalettesAddr + static_cast<uint32_t>((i - 1) * Palette::PALETTE_SIZE_IN_ROM));
+      file.write(paletteData, Palette::PALETTE_SIZE_IN_ROM);
+    }
   }
 
   {

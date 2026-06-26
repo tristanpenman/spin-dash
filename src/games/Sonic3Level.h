@@ -24,6 +24,7 @@ public:
 
   size_t getPaletteCount() const override;
   const Palette& getPalette(size_t index) const override;
+  Palette& getPalette(size_t index) override;
 
   size_t getPatternCount() const override;
   const Pattern& getPattern(size_t index) const override;
