@@ -22,7 +22,7 @@ using namespace std;
 static constexpr int PIXMAP_WIDTH = 320;
 static constexpr int PATTERNS_PER_ROW = PIXMAP_WIDTH / Pattern::PATTERN_WIDTH;
 
-PatternInspector::PatternInspector(QWidget* parent, shared_ptr<Level>& level)
+PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_pixmap(nullptr)

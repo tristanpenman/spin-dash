@@ -20,7 +20,7 @@ class PaletteEditor : public QDialog
   Q_OBJECT
 
 public:
-  PaletteEditor(QWidget* parent, std::shared_ptr<Level>& level);
+  PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& level);
 
 protected:
   void closeEvent(QCloseEvent* event) override;

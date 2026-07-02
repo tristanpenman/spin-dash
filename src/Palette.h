@@ -21,7 +21,8 @@ public:
   static constexpr uint8_t PALETTE_SIZE = 16;
   static constexpr uint8_t PALETTE_SIZE_IN_ROM = BYTES_PER_COLOR * PALETTE_SIZE;
 
-  struct Color {
+  struct Color
+  {
     uint8_t r;
     uint8_t g;
     uint8_t b;

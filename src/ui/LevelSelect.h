@@ -15,7 +15,7 @@ class LevelSelect : public QDialog
   Q_OBJECT
 
 public:
-  LevelSelect(QWidget *parent, std::shared_ptr<Game>& game);
+  LevelSelect(QWidget *parent, const std::shared_ptr<Game>& game);
 
 signals:
   void levelSelected(int levelIdx);
@@ -31,5 +31,5 @@ protected:
 private slots:
   void ok(bool);
   void cancel(bool);
-  void selectionChanged(QItemSelection selection);
+  void selectionChanged(const QItemSelection& selection);
 };

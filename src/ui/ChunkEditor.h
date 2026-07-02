@@ -26,7 +26,7 @@ class ChunkCanvas : public QWidget
   Q_OBJECT
 
 public:
-  ChunkCanvas(QWidget* parent, std::shared_ptr<Level>& level, Chunk* chunks);
+  ChunkCanvas(QWidget* parent, const std::shared_ptr<Level>& level, Chunk* chunks);
 
   void setChunkIndex(size_t chunkIndex);
   void setSelectedBlock(uint16_t blockIndex);
@@ -62,7 +62,7 @@ class ChunkEditor : public QDialog
   Q_OBJECT
 
 public:
-  ChunkEditor(QWidget* parent, std::shared_ptr<Level>& level, size_t initialChunkIndex);
+  ChunkEditor(QWidget* parent, const std::shared_ptr<Level>& level, size_t initialChunkIndex);
   ~ChunkEditor();
 
 protected:

@@ -16,7 +16,7 @@
 
 using namespace std;
 
-ChunkInspector::ChunkInspector(QWidget* parent, shared_ptr<Level>& level)
+ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_chunkIndex(0)

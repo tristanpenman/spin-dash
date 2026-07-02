@@ -33,7 +33,7 @@ static QColor toQColor(const Palette::Color& color)
   return QColor(color.r, color.g, color.b);
 }
 
-BlockCanvas::BlockCanvas(QWidget* parent, shared_ptr<Level>& level, Block* blocks)
+BlockCanvas::BlockCanvas(QWidget* parent, const shared_ptr<Level>& level, Block* blocks)
   : QWidget(parent)
   , m_level(level)
   , m_blocks(blocks)
@@ -157,7 +157,7 @@ uint16_t BlockCanvas::selectedPatternDescValue() const
   return value;
 }
 
-PatternPaletteList::PatternPaletteList(QWidget* parent, shared_ptr<Level>& level)
+PatternPaletteList::PatternPaletteList(QWidget* parent, const shared_ptr<Level>& level)
   : QWidget(parent)
   , m_level(level)
   , m_selectedPatternIndex(0)
@@ -182,9 +182,9 @@ void PatternPaletteList::mousePressEvent(QMouseEvent* event)
   }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-  const QPoint pos = event->position().toPoint();
+  const auto pos = event->position().toPoint();
 #else
-  const QPoint pos = event->pos();
+  const auto pos = event->pos();
 #endif
   const int patternIndex = pos.y() / PATTERN_ROW_HEIGHT;
   const int paletteIndex = (pos.x() - PATTERN_LABEL_WIDTH) / PATTERN_CELL_SIZE;
@@ -256,7 +256,7 @@ const QPixmap& PatternPaletteList::cachedPixmap(size_t patternIndex, size_t pale
   return m_pixmaps[patternIndex * 4 + paletteIndex];
 }
 
-BlockEditor::BlockEditor(QWidget* parent, shared_ptr<Level>& level)
+BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_blocks(new Block[level->getBlockCount()])

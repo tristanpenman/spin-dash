@@ -14,7 +14,9 @@ class Pattern;
 class Level
 {
 public:
-  virtual ~Level() {}
+  virtual ~Level()
+  {
+  }
 
   virtual size_t getPaletteCount() const = 0;
   virtual const Palette& getPalette(size_t index) const = 0;

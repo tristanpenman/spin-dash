@@ -11,7 +11,7 @@ uint16_t readWord(const vector<uint8_t>& data, size_t offset)
     return static_cast<uint16_t>(data[offset] << 8) | data[offset + 1];
 }
 
-} // namespace
+}  // namespace
 
 vector<RingGroup> Sonic2RingLayout::read(const vector<uint8_t>& data)
 {

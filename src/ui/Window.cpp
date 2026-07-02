@@ -48,7 +48,7 @@ constexpr int MaxRecentRoms = 10;
 constexpr const char* SettingsOrganization = "Tristan Penman";
 constexpr const char* SettingsApplication = "SpinDash";
 constexpr const char* RecentRomsKey = "recentRoms";
-}
+}  // namespace
 
 Window::Window()
   : QMainWindow(nullptr)

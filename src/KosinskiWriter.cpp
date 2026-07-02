@@ -127,10 +127,10 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
       length--;
 
       if (length + offset == 0) {
-        int32_t seg_length = length;
+        int32_t segLength = length;
 
         while (pos + length < int32_t(dataSize)) {
-          if (data[pos + length - seg_length] != data[pos + length]) {
+          if (data[pos + length - segLength] != data[pos + length]) {
             break;
           }
 

@@ -28,7 +28,7 @@ const char* levelLabel(Logger::Level level)
   }
 }
 
-} // namespace
+}  // namespace
 
 Logger::Logger(string name)
   : m_name(std::move(name))

@@ -48,7 +48,7 @@ class PatternEditor : public QDialog
   Q_OBJECT
 
 public:
-  PatternEditor(QWidget* parent, std::shared_ptr<Level>& level);
+  PatternEditor(QWidget* parent, const std::shared_ptr<Level>& level);
 
 protected:
   void closeEvent(QCloseEvent* event) override;

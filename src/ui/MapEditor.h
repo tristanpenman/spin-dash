@@ -24,7 +24,7 @@ class MapEditor : public QWidget
   Q_OBJECT
 
 public:
-  MapEditor(QWidget *parent, std::shared_ptr<Level>&);
+  MapEditor(QWidget *parent, const std::shared_ptr<Level>&);
 
   void undo();
   void redo();

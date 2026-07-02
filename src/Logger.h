@@ -43,7 +43,8 @@
 class Logger
 {
 public:
-  enum class Level {
+  enum class Level
+  {
     Verbose = 0,
     Info = 1,
     Warning = 2,

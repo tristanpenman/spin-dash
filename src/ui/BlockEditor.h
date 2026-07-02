@@ -24,7 +24,7 @@ class BlockCanvas : public QWidget
   Q_OBJECT
 
 public:
-  BlockCanvas(QWidget* parent, std::shared_ptr<Level>& level, Block* blocks);
+  BlockCanvas(QWidget* parent, const std::shared_ptr<Level>& level, Block* blocks);
 
   void setBlockIndex(size_t blockIndex);
   void setSelectedPattern(uint16_t patternIndex, uint16_t paletteIndex, bool hFlip, bool vFlip);
@@ -56,7 +56,7 @@ class PatternPaletteList : public QWidget
   Q_OBJECT
 
 public:
-  PatternPaletteList(QWidget* parent, std::shared_ptr<Level>& level);
+  PatternPaletteList(QWidget* parent, const std::shared_ptr<Level>& level);
 
   void setSelected(uint16_t patternIndex, uint16_t paletteIndex);
 
@@ -83,7 +83,7 @@ class BlockEditor : public QDialog
   Q_OBJECT
 
 public:
-  BlockEditor(QWidget* parent, std::shared_ptr<Level>& level);
+  BlockEditor(QWidget* parent, const std::shared_ptr<Level>& level);
   ~BlockEditor();
 
 protected:

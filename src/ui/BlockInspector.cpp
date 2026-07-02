@@ -23,7 +23,7 @@ using namespace std;
 static constexpr int PIXMAP_WIDTH = 320;
 static constexpr int BLOCKS_PER_ROW = PIXMAP_WIDTH / Block::BLOCK_WIDTH;
 
-BlockInspector::BlockInspector(QWidget* parent, shared_ptr<Level>& level)
+BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_pixmap(nullptr)

@@ -19,7 +19,7 @@ class ChunkInspector : public QDialog
   Q_OBJECT
 
 public:
-  ChunkInspector(QWidget *parent, std::shared_ptr<Level>& level);
+  ChunkInspector(QWidget *parent, const std::shared_ptr<Level>& level);
 
   void refresh();
 

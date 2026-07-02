@@ -18,7 +18,7 @@ class BlockInspector : public QDialog
   Q_OBJECT
 
 public:
-  BlockInspector(QWidget *parent, std::shared_ptr<Level>& level);
+  BlockInspector(QWidget *parent, const std::shared_ptr<Level>& level);
 
   void refresh();
 

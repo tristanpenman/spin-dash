@@ -12,7 +12,7 @@ class Rom;
 class Sonic2 : public Game
 {
 public:
-  Sonic2(std::shared_ptr<Rom>& rom);
+  Sonic2(const std::shared_ptr<Rom>& rom);
 
   bool isCompatible() override;
   const char* getIdentifier() const override;
@@ -24,7 +24,8 @@ public:
   bool save(unsigned int levelIdx, Level&) override;
 
 private:
-  struct DataRegion {
+  struct DataRegion
+  {
     uint32_t address;
     size_t size;
   };

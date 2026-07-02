@@ -19,9 +19,10 @@ uint8_t toSegaChannel(int value)
 {
   return static_cast<uint8_t>((value / 0x10) * 0x10);
 }
-}
 
-PaletteEditor::PaletteEditor(QWidget* parent, std::shared_ptr<Level>& level)
+}  // namespace
+
+PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_paletteCombo(new QComboBox())

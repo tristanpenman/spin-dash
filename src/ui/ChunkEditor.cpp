@@ -32,7 +32,7 @@ static QColor toQColor(const Palette::Color& color)
   return QColor(color.r, color.g, color.b);
 }
 
-ChunkCanvas::ChunkCanvas(QWidget* parent, shared_ptr<Level>& level, Chunk* chunks)
+ChunkCanvas::ChunkCanvas(QWidget* parent, const shared_ptr<Level>& level, Chunk* chunks)
   : QWidget(parent)
   , m_level(level)
   , m_chunks(chunks)
@@ -202,7 +202,7 @@ void ChunkCanvas::drawPattern(QPainter& painter,
   }
 }
 
-ChunkEditor::ChunkEditor(QWidget* parent, shared_ptr<Level>& level, size_t initialChunkIndex)
+ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t initialChunkIndex)
   : QDialog(parent)
   , m_level(level)
   , m_chunks(new Chunk[level->getChunkCount()])

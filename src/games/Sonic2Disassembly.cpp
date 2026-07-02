@@ -37,7 +37,7 @@ vector<uint8_t> toBytes(const QByteArray& data)
   return vector<uint8_t>(data.begin(), data.end());
 }
 
-} // namespace
+}  // namespace
 
 Sonic2Disassembly::Sonic2Disassembly(const string& iniPath)
   : m_rootDir(QFileInfo(QString::fromStdString(iniPath)).absoluteDir())

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-shared_ptr<Game> GameFactory::build(shared_ptr<Rom>& rom)
+shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
 {
   // try Sonic2
   shared_ptr<Game> game = make_shared<Sonic2>(rom);

@@ -34,7 +34,7 @@
 
 using namespace std;
 
-MapEditor::MapEditor(QWidget *parent, shared_ptr<Level>& level)
+MapEditor::MapEditor(QWidget *parent, const shared_ptr<Level>& level)
   : QWidget(parent)
   , m_level(level)
   , m_chunkSelector(nullptr)

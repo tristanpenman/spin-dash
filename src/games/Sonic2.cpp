@@ -1,3 +1,7 @@
+#include <algorithm>
+
+#include <QBuffer>
+
 #include "../KosinskiReader.h"
 #include "../KosinskiWriter.h"
 #include "../Block.h"
@@ -10,9 +14,6 @@
 
 #include "Sonic2.h"
 #include "Sonic2Level.h"
-
-#include <algorithm>
-#include <QBuffer>
 
 #undef LOG
 #define LOG Logger("Sonic2")
@@ -32,7 +33,7 @@ static constexpr uint32_t ringLayoutDirAddrLoc = 0x172D0;       // Pointer to di
 static constexpr uint32_t ringLayoutDirEntryCount = 34;
 static constexpr uint32_t maxRingLayoutSize = 0x10000;
 
-Sonic2::Sonic2(shared_ptr<Rom>& rom)
+Sonic2::Sonic2(const shared_ptr<Rom>& rom)
   : m_rom(rom)
 {
 

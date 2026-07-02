@@ -106,7 +106,7 @@ void PatternCanvas::paintPixelAt(const QPoint& pos)
   emit patternChanged();
 }
 
-PatternEditor::PatternEditor(QWidget* parent, shared_ptr<Level>& level)
+PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
   : QDialog(parent)
   , m_level(level)
   , m_patternCombo(nullptr)

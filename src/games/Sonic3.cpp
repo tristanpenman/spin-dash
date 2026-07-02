@@ -15,7 +15,7 @@ static constexpr const uint32_t levelPaletteDir = 0x8BF54;     // Directory of p
 
 using namespace std;
 
-Sonic3::Sonic3(shared_ptr<Rom>& rom)
+Sonic3::Sonic3(const shared_ptr<Rom>& rom)
   : m_rom(rom)
 {
 
@@ -55,15 +55,15 @@ vector<string> Sonic3::getTitleCards()
 
 shared_ptr<Level> Sonic3::loadLevel(unsigned int levelIdx)
 {
-  const uint32_t characterPaletteAddr = getCharacterPaletteAddr();
-  const uint32_t levelPalettesAddr = getLevelPalettesAddr(levelIdx);
-  const uint32_t patternsAddr = getPatternsAddr(levelIdx);
-  const uint32_t extendedPatternsAddr = getExtendedPatternsAddr(levelIdx);
-  const uint32_t blocksAddr = getBlocksAddr(levelIdx);
-  const uint32_t extendedBlocksAddr = getExtendedBlocksAddr(levelIdx);
-  const uint32_t chunksAddr = getChunksAddr(levelIdx);
-  const uint32_t extendedChunksAddr = getExtendedChunksAddr(levelIdx);
-  const uint32_t mapAddr = getTilesAddr(levelIdx);
+  const auto characterPaletteAddr = getCharacterPaletteAddr();
+  const auto levelPalettesAddr = getLevelPalettesAddr(levelIdx);
+  const auto patternsAddr = getPatternsAddr(levelIdx);
+  const auto extendedPatternsAddr = getExtendedPatternsAddr(levelIdx);
+  const auto blocksAddr = getBlocksAddr(levelIdx);
+  const auto extendedBlocksAddr = getExtendedBlocksAddr(levelIdx);
+  const auto chunksAddr = getChunksAddr(levelIdx);
+  const auto extendedChunksAddr = getExtendedChunksAddr(levelIdx);
+  const auto mapAddr = getTilesAddr(levelIdx);
 
   LOG() << "Character palette addr: 0x" << hex << characterPaletteAddr;
   LOG() << "Level palettes addr: 0x" << hex << levelPalettesAddr;

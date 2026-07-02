@@ -12,7 +12,7 @@
 
 #include "LevelSelect.h"
 
-LevelSelect::LevelSelect(QWidget *parent, std::shared_ptr<Game>& game)
+LevelSelect::LevelSelect(QWidget *parent, const std::shared_ptr<Game>& game)
   : QDialog(parent)
   , m_game(game)
 {
@@ -74,7 +74,7 @@ void LevelSelect::cancel(bool)
   reject();
 }
 
-void LevelSelect::selectionChanged(QItemSelection selection)
+void LevelSelect::selectionChanged(const QItemSelection& selection)
 {
   m_okButton->setDisabled(selection.length() == 0);
 }

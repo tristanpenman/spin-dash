@@ -17,7 +17,7 @@ class PatternInspector : public QDialog
   Q_OBJECT
 
 public:
-  PatternInspector(QWidget *parent, std::shared_ptr<Level>& level);
+  PatternInspector(QWidget *parent, const std::shared_ptr<Level>& level);
 
   void refresh();
 

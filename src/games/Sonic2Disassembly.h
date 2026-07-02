@@ -27,7 +27,8 @@ public:
   bool save(unsigned int levelIdx, Level&) override;
 
 private:
-  struct LevelEntry {
+  struct LevelEntry
+  {
     std::string title;
     QString paletteSpec;
     QString patternsSpec;

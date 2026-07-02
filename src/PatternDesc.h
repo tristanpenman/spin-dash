@@ -102,7 +102,7 @@ inline bool PatternDesc::getVFlip() const
   return (m_index & 0x1000) != 0;
 }
 
-inline void PatternDesc::set(unsigned short new_index)
+inline void PatternDesc::set(unsigned short newIndex)
 {
-  m_index = new_index;
+  m_index = newIndex;
 }
